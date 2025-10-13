@@ -26,11 +26,11 @@ make test
 make build   # outputs bin/things-mcp
 ```
 
-Start the server (optional `ARGS=-activate` to bring Things to the foreground on every command):
+Start the server. By default Things stays in the background; pass `ARGS="-activate"` to tell the binary to bring Things to the front after each command:
 
 ```bash
-make run            # defaults to background launches
-make run ARGS=-activate
+make run                     # launch with background URLs
+make run ARGS="-activate"    # launch and foreground Things each time
 ```
 
 Add the following MCP server config to your client (adjust the binary path if needed):
@@ -144,4 +144,3 @@ The tests cover URL encoding, validation, and JSON compaction logic.
 ## Known Limitations
 
 - The Things URL scheme is write- and navigation-focused; it does **not** provide endpoints to list existing todos or projects. Use Things directly (or another integration) when you need to read structured data.
-

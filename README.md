@@ -39,7 +39,7 @@ Add the following MCP server config to your client (adjust the binary path if ne
 {
   "mcpServers": {
     "things-mcp": {
-      "command": "/Users/mgomes/Documents/Work/moonbase/things-mcp/bin/things-mcp",
+      "command": "/your/local/path/things-mcp/bin/things-mcp",
       "args": []
     }
   }
@@ -52,7 +52,7 @@ Pass `"-activate"` or other flags in the `args` array when you want to foregroun
 {
   "mcpServers": {
     "things-mcp": {
-      "command": "/Users/mgomes/Documents/Work/moonbase/things-mcp/bin/things-mcp",
+      "command": "/your/local/path/things-mcp/bin/things-mcp",
       "args": ["-activate"]
     }
   }
@@ -60,6 +60,22 @@ Pass `"-activate"` or other flags in the `args` array when you want to foregroun
 ```
 
 ### MCP Client Configuration
+
+<details>
+  <summary>Codex CLI</summary>
+  Run:
+
+```bash
+codex mcp add things-mcp -- /your/local/path/moonbase/things-mcp/bin/things-mcp
+```
+
+Add `-activate` after the binary path if you want Things to pop to the foreground:
+
+```bash
+codex mcp add things-mcp -- /your/local/path/moonbase/things-mcp/bin/things-mcp -activate
+```
+
+</details>
 
 <details>
   <summary>Claude Desktop</summary>
@@ -71,10 +87,11 @@ Pass `"-activate"` or other flags in the `args` array when you want to foregroun
   Run:
 
 ```bash
-claude mcp add things-mcp /Users/mgomes/Documents/Work/moonbase/things-mcp/bin/things-mcp
+claude mcp add things-mcp /your/local/path/things-mcp/bin/things-mcp
 ```
 
 Add `-activate` after the binary path if you want Things to pop to the foreground.
+
 </details>
 
 <details>
@@ -86,10 +103,11 @@ Add `-activate` after the binary path if you want Things to pop to the foregroun
   <summary>Gemini CLI</summary>
 
 ```bash
-gemini mcp add things-mcp /Users/mgomes/Documents/Work/moonbase/things-mcp/bin/things-mcp
+gemini mcp add things-mcp /your/local/path/moonbase/things-mcp/bin/things-mcp
 ```
 
 Supply `--args -activate` if you want foreground launches.
+
 </details>
 
 <details>
@@ -107,10 +125,11 @@ Supply `--args -activate` if you want foreground launches.
   Run:
 
 ```bash
-code --add-mcp '{"name":"things-mcp","command":"/Users/mgomes/Documents/Work/moonbase/things-mcp/bin/things-mcp","args":[]}'
+code --add-mcp '{"name":"things-mcp","command":"/your/local/path/things-mcp/bin/things-mcp","args":[]}'
 ```
 
 Reopen VS Code so Copilot Chat loads the server.
+
 </details>
 
 <details>

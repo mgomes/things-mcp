@@ -66,13 +66,13 @@ Pass `"-activate"` or other flags in the `args` array when you want to foregroun
   Run:
 
 ```bash
-codex mcp add things-mcp -- /your/local/path/moonbase/things-mcp/bin/things-mcp
+codex mcp add things-mcp -- /your/local/path/things-mcp/bin/things-mcp
 ```
 
 Add `-activate` after the binary path if you want Things to pop to the foreground:
 
 ```bash
-codex mcp add things-mcp -- /your/local/path/moonbase/things-mcp/bin/things-mcp -activate
+codex mcp add things-mcp -- /your/local/path/things-mcp/bin/things-mcp -activate
 ```
 
 </details>
@@ -103,7 +103,7 @@ Add `-activate` after the binary path if you want Things to pop to the foregroun
   <summary>Gemini CLI</summary>
 
 ```bash
-gemini mcp add things-mcp /your/local/path/moonbase/things-mcp/bin/things-mcp
+gemini mcp add things-mcp /your/local/path/things-mcp/bin/things-mcp
 ```
 
 Supply `--args -activate` if you want foreground launches.

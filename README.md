@@ -1,165 +1,90 @@
 # Things MCP
 
-`things-mcp` lets your coding agent (Claude, Cursor, Gemini, Copilot, etc.) drive the [Things](https://culturedcode.com/things/) task manager on macOS via its documented URL scheme. The server wraps each Things command as a Model Context Protocol (MCP) tool so your assistant can create, update, and reveal todos and projects without private APIs.
+An MCP server for [Things](https://culturedcode.com/things/) on macOS. Agents read and edit your tasks through Things' AppleScript interface.
 
-## Key Features
-
-- **First-class Things commands** – Exposes `add`, `add-project`, `update`, `update-project`, `show`, `search`, `version`, and `json` as MCP tools.
-- **Safe URL dispatch** – Normalizes outgoing URLs (e.g. spaces as `%20`) and supports optional foreground activation.
-- **Composable toolkit** – Each tool returns the invoked Things URL, making it easy to log or retry actions in agents.
-
-## Disclaimers
-
-`things-mcp` launches Things through its URL scheme. Any MCP client with access to the server can navigate your task lists or create/update items. Only enable the server for trusted assistants and users.
+Any client connected to this server can change your tasks. Only give it to agents you trust.
 
 ## Requirements
 
-- macOS with [Things](https://culturedcode.com/things/mac/) installed and “Things URLs” enabled in Things → Settings → General.
-- Go `1.25.2` (the repo uses the Go toolchain manager).
+- macOS with Things 3
+- Rust 1.85+
 
-## Getting Started
-
-Clone the repo, then build and test:
+## Install
 
 ```bash
-make test
-make build   # outputs bin/things-mcp
+cargo install --git https://github.com/mgomes/things-mcp
 ```
 
-Start the server. By default Things stays in the background; pass `ARGS="-activate"` to tell the binary to bring Things to the front after each command:
+This puts `things-mcp` in `~/.cargo/bin`. GUI apps may not see that path, so use the absolute path (`which things-mcp`) in JSON configs.
+
+The first call asks macOS to let your agent's app control Things. Allow it. The server never brings Things to the front.
+
+## Add to your agent
+
+**Claude Code**
 
 ```bash
-make run                     # launch with background URLs
-make run ARGS="-activate"    # launch and foreground Things each time
+claude mcp add -s user things -- things-mcp
 ```
 
-Add the following MCP server config to your client (adjust the binary path if needed):
+**Codex**
+
+```bash
+codex mcp add things -- things-mcp
+```
+
+**Gemini CLI**
+
+```bash
+gemini mcp add -s user things things-mcp
+```
+
+**VS Code**
+
+```bash
+code --add-mcp '{"name":"things","command":"things-mcp"}'
+```
+
+**Cursor, Claude Desktop, and other JSON configs**
+
+Add to `~/.cursor/mcp.json`, `~/Library/Application Support/Claude/claude_desktop_config.json`, or your client's equivalent:
 
 ```json
 {
   "mcpServers": {
-    "things-mcp": {
-      "command": "/your/local/path/things-mcp/bin/things-mcp",
-      "args": []
+    "things": {
+      "command": "/Users/you/.cargo/bin/things-mcp"
     }
   }
 }
 ```
-
-Pass `"-activate"` or other flags in the `args` array when you want to foreground Things:
-
-```json
-{
-  "mcpServers": {
-    "things-mcp": {
-      "command": "/your/local/path/things-mcp/bin/things-mcp",
-      "args": ["-activate"]
-    }
-  }
-}
-```
-
-### MCP Client Configuration
-
-<details>
-  <summary>Codex CLI</summary>
-  Run:
-
-```bash
-codex mcp add things-mcp -- /your/local/path/things-mcp/bin/things-mcp
-```
-
-Add `-activate` after the binary path if you want Things to pop to the foreground:
-
-```bash
-codex mcp add things-mcp -- /your/local/path/things-mcp/bin/things-mcp -activate
-```
-
-</details>
-
-<details>
-  <summary>Claude Desktop</summary>
-  Edit `~/Library/Application Support/Claude/claude_desktop_config.json` and add the snippet above under `mcpServers`. Restart Claude Desktop afterwards.
-</details>
-
-<details>
-  <summary>Claude Code CLI</summary>
-  Run:
-
-```bash
-claude mcp add things-mcp /your/local/path/things-mcp/bin/things-mcp
-```
-
-Add `-activate` after the binary path if you want Things to pop to the foreground.
-
-</details>
-
-<details>
-  <summary>Cursor</summary>
-  Go to **Settings → MCP → New MCP Server**, choose “Stdio”, set the command to the built binary path, and optionally add `-activate` in arguments. Alternatively use the deeplink builder inside Cursor with the JSON above.
-</details>
-
-<details>
-  <summary>Gemini CLI</summary>
-
-```bash
-gemini mcp add things-mcp /your/local/path/things-mcp/bin/things-mcp
-```
-
-Supply `--args -activate` if you want foreground launches.
-
-</details>
-
-<details>
-  <summary>GitHub Copilot CLI</summary>
-  Inside the Copilot prompt run `/mcp add`, choose “Local” server type, set command to the binary path, and leave arguments blank (or `-activate` as desired).
-</details>
-
-<details>
-  <summary>JetBrains AI Assistant / Junie</summary>
-  Navigate to **Settings → Tools → AI Assistant → Model Context Protocol**, click **Add**, set the command field to the built binary, and specify any arguments. Repeat the same flow for Junie under **Settings → Tools → Junie → MCP Settings**.
-</details>
-
-<details>
-  <summary>VS Code / Copilot Chat</summary>
-  Run:
-
-```bash
-code --add-mcp '{"name":"things-mcp","command":"/your/local/path/things-mcp/bin/things-mcp","args":[]}'
-```
-
-Reopen VS Code so Copilot Chat loads the server.
-
-</details>
-
-<details>
-  <summary>Warp</summary>
-  Open **Settings → AI → Manage MCP Servers → + Add**, select “Local”, and use the standard command/args snippet.
-</details>
 
 ## Tools
 
-- `things-add` – create todos (supports multi-title batches, tags, deadlines, etc.)
-- `things-add-project` – create projects with optional child todos and metadata
-- `things-update` – update existing todos (requires Things auth token)
-- `things-update-project` – update existing projects (requires auth token)
-- `things-show` – reveal a list/project/todo or quick find query
-- `things-search` – open the search UI with optional query text
-- `things-version` – show the Things build/scheme version dialog
-- `things-json` – invoke the JSON batch command for complex imports
+| Tool | Does |
+| --- | --- |
+| `things-todos` | List to-dos in a built-in list, project, area, or tag |
+| `things-search` | Find to-dos by title or notes |
+| `things-get` | Get a to-do or project by ID |
+| `things-projects` | List projects |
+| `things-areas` | List areas |
+| `things-tags` | List tags |
+| `things-add` | Create a to-do |
+| `things-add-project` | Create a project, optionally with to-dos |
+| `things-update` | Edit, move, schedule, complete, or cancel a to-do or project |
+| `things-delete` | Move a to-do or project to the Trash |
+| `things-show` | Navigate the Things window to an item or list |
 
-Each tool returns structured output with the dispatched URL so clients can display or reuse it.
+Everything returns JSON with IDs. Tools are annotated read-only or destructive so agents can auto-approve reads.
 
-## Testing
+## Limitations
 
-Run the suite with:
+Things' AppleScript interface doesn't expose checklist items, headings, This Evening, or reminder times.
+
+## Development
 
 ```bash
-make test
+just test
+just build
+just install
 ```
-
-The tests cover URL encoding, validation, and JSON compaction logic.
-
-## Known Limitations
-
-- The Things URL scheme is write- and navigation-focused; it does **not** provide endpoints to list existing todos or projects. Use Things directly (or another integration) when you need to read structured data.

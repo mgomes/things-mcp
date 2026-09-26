@@ -17,7 +17,7 @@ cargo install --git https://github.com/mgomes/things-mcp
 
 This puts `things-mcp` in `~/.cargo/bin`. GUI apps may not see that path, so use the absolute path (`which things-mcp`) in JSON configs.
 
-The first call asks macOS to let your agent's app control Things. Allow it.
+The first call asks macOS to let your agent's app control Things. Allow it. The server never brings Things to the front.
 
 ## Add to your agent
 
@@ -73,7 +73,7 @@ Add to `~/.cursor/mcp.json`, `~/Library/Application Support/Claude/claude_deskto
 | `things-add-project` | Create a project, optionally with to-dos |
 | `things-update` | Edit, move, schedule, complete, or cancel a to-do or project |
 | `things-delete` | Move a to-do or project to the Trash |
-| `things-show` | Bring Things to the front showing an item or list |
+| `things-show` | Navigate the Things window to an item or list |
 
 Everything returns JSON with IDs. Tools are annotated read-only or destructive so agents can auto-approve reads.
 

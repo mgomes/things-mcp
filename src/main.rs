@@ -158,7 +158,7 @@ impl Server {
 
     #[tool(
         name = "things-show",
-        description = "Bring Things to the front showing an item or list",
+        description = "Navigate the Things window to an item or list without focusing it",
         annotations(read_only_hint = true, open_world_hint = false)
     )]
     async fn show(&self, Parameters(p): Parameters<ShowInput>) -> Result<String, String> {

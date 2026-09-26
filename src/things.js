@@ -204,7 +204,6 @@ function show(req) {
   else if (exists(t.toDos.byId(req.id))) target = t.toDos.byId(req.id);
   else if (exists(t.areas.byId(req.id))) target = t.areas.byId(req.id);
   else target = find(t.tags, "item", req.id);
-  t.activate();
   t.show(target);
   return { shown: req.list || req.id };
 }

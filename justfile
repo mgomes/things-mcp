@@ -10,8 +10,8 @@ lint:
     cargo fmt --check
     cargo clippy --all-targets -- -D warnings
 
-run *args:
-    cargo run -- {{args}}
+run:
+    cargo run
 
 install:
     cargo install --path .

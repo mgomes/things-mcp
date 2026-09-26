@@ -5,7 +5,6 @@ edition = "2024"
 
 [dependencies]
 anyhow = "1.0.104"
-percent-encoding = "2.3.2"
 rmcp = { version = "3.4.1", features = ["server", "transport-io", "macros"] }
 schemars = "1.2.2"
 serde = { version = "1.0.229", features = ["derive"] }

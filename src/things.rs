@@ -1,7 +1,7 @@
 use percent_encoding::{AsciiSet, NON_ALPHANUMERIC, utf8_percent_encode};
 use schemars::JsonSchema;
-use serde::Deserialize;
-use serde_json::Value;
+use serde::{Deserialize, Serialize};
+use serde_json::{Value, json};
 
 const COMPONENT: &AsciiSet = &NON_ALPHANUMERIC
     .remove(b'-')
@@ -49,25 +49,21 @@ impl Query {
     }
 }
 
-fn require_update(q: &Query, auth_token: &str, id: &str) -> Result<()> {
-    if auth_token.is_empty() {
-        return Err("authToken is required".into());
-    }
+fn update_query(auth_token: &Option<String>, id: &str, q: Query) -> Result<Query> {
+    let Some(auth_token) = auth_token.as_deref().filter(|t| !t.is_empty()) else {
+        return Err("authToken is required (or set THINGS_AUTH_TOKEN)".into());
+    };
     if id.is_empty() {
         return Err("id is required".into());
     }
     if q.0.is_empty() {
         return Err("provide at least one field to update".into());
     }
-    Ok(())
-}
-
-fn with_auth(auth_token: &str, id: &str, q: Query) -> Query {
     let mut out = Query::default();
     out.set("auth-token", auth_token);
     out.set("id", id);
     out.0.extend(q.0);
-    out
+    Ok(out)
 }
 
 #[derive(Debug, Default, Deserialize, JsonSchema)]
@@ -76,20 +72,30 @@ pub struct AddInput {
     pub title: Option<String>,
     pub titles: Option<Vec<String>>,
     pub notes: Option<String>,
+    /// today, tomorrow, evening, anytime, someday, yyyy-mm-dd, or yyyy-mm-dd@HH:MM
     pub when: Option<String>,
+    /// yyyy-mm-dd. On updates, an empty string clears it
     pub deadline: Option<String>,
+    /// Tag names. Tags that do not exist are ignored
     pub tags: Option<Vec<String>>,
     pub checklist_items: Option<Vec<String>>,
+    /// replace-title, replace-notes, or replace-checklist-items
     pub use_clipboard: Option<String>,
+    /// Project or area name
     pub list: Option<String>,
+    /// Project or area ID. Takes precedence over list
     pub list_id: Option<String>,
+    /// Heading name within the project
     pub heading: Option<String>,
     pub heading_id: Option<String>,
     pub completed: Option<bool>,
     pub canceled: Option<bool>,
+    /// Open the Quick Entry window prefilled instead of saving
     pub show_quick_entry: Option<bool>,
     pub reveal: Option<bool>,
+    /// ISO 8601 date-time
     pub creation_date: Option<String>,
+    /// ISO 8601 date-time
     pub completion_date: Option<String>,
 }
 
@@ -133,16 +139,22 @@ impl AddInput {
 pub struct AddProjectInput {
     pub title: Option<String>,
     pub notes: Option<String>,
+    /// today, tomorrow, evening, anytime, someday, yyyy-mm-dd, or yyyy-mm-dd@HH:MM
     pub when: Option<String>,
+    /// yyyy-mm-dd. On updates, an empty string clears it
     pub deadline: Option<String>,
+    /// Tag names. Tags that do not exist are ignored
     pub tags: Option<Vec<String>>,
     pub area: Option<String>,
+    /// Area ID. Takes precedence over area
     pub area_id: Option<String>,
     pub to_dos: Option<Vec<String>>,
     pub completed: Option<bool>,
     pub canceled: Option<bool>,
     pub reveal: Option<bool>,
+    /// ISO 8601 date-time
     pub creation_date: Option<String>,
+    /// ISO 8601 date-time
     pub completion_date: Option<String>,
 }
 
@@ -169,28 +181,39 @@ impl AddProjectInput {
 #[derive(Debug, Default, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase")]
 pub struct UpdateInput {
-    pub auth_token: String,
+    /// Defaults to the THINGS_AUTH_TOKEN env var
+    pub auth_token: Option<String>,
+    /// Get IDs from things-todos, things-projects, or things-get
     pub id: String,
     pub title: Option<String>,
     pub notes: Option<String>,
     pub prepend_notes: Option<String>,
     pub append_notes: Option<String>,
+    /// today, tomorrow, evening, anytime, someday, yyyy-mm-dd, or yyyy-mm-dd@HH:MM
     pub when: Option<String>,
+    /// yyyy-mm-dd. On updates, an empty string clears it
     pub deadline: Option<String>,
+    /// Tag names. Tags that do not exist are ignored
     pub tags: Option<Vec<String>>,
     pub add_tags: Option<Vec<String>>,
     pub checklist_items: Option<Vec<String>>,
     pub prepend_checklist_items: Option<Vec<String>>,
     pub append_checklist_items: Option<Vec<String>>,
+    /// Project or area name
     pub list: Option<String>,
+    /// Project or area ID. Takes precedence over list
     pub list_id: Option<String>,
+    /// Heading name within the project
     pub heading: Option<String>,
     pub heading_id: Option<String>,
     pub completed: Option<bool>,
     pub canceled: Option<bool>,
     pub reveal: Option<bool>,
+    /// Duplicate the item and update the copy
     pub duplicate: Option<bool>,
+    /// ISO 8601 date-time
     pub creation_date: Option<String>,
+    /// ISO 8601 date-time
     pub completion_date: Option<String>,
 }
 
@@ -222,31 +245,39 @@ impl UpdateInput {
         q.bool("duplicate", self.duplicate);
         q.str("creation-date", &self.creation_date);
         q.str("completion-date", &self.completion_date);
-        require_update(&q, &self.auth_token, &self.id)?;
-        Ok(with_auth(&self.auth_token, &self.id, q).url("update"))
+        Ok(update_query(&self.auth_token, &self.id, q)?.url("update"))
     }
 }
 
 #[derive(Debug, Default, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase")]
 pub struct UpdateProjectInput {
-    pub auth_token: String,
+    /// Defaults to the THINGS_AUTH_TOKEN env var
+    pub auth_token: Option<String>,
+    /// Get IDs from things-todos, things-projects, or things-get
     pub id: String,
     pub title: Option<String>,
     pub notes: Option<String>,
     pub prepend_notes: Option<String>,
     pub append_notes: Option<String>,
+    /// today, tomorrow, evening, anytime, someday, yyyy-mm-dd, or yyyy-mm-dd@HH:MM
     pub when: Option<String>,
+    /// yyyy-mm-dd. On updates, an empty string clears it
     pub deadline: Option<String>,
+    /// Tag names. Tags that do not exist are ignored
     pub tags: Option<Vec<String>>,
     pub add_tags: Option<Vec<String>>,
     pub area: Option<String>,
+    /// Area ID. Takes precedence over area
     pub area_id: Option<String>,
     pub completed: Option<bool>,
     pub canceled: Option<bool>,
     pub reveal: Option<bool>,
+    /// Duplicate the item and update the copy
     pub duplicate: Option<bool>,
+    /// ISO 8601 date-time
     pub creation_date: Option<String>,
+    /// ISO 8601 date-time
     pub completion_date: Option<String>,
 }
 
@@ -269,15 +300,17 @@ impl UpdateProjectInput {
         q.bool("duplicate", self.duplicate);
         q.str("creation-date", &self.creation_date);
         q.str("completion-date", &self.completion_date);
-        require_update(&q, &self.auth_token, &self.id)?;
-        Ok(with_auth(&self.auth_token, &self.id, q).url("update-project"))
+        Ok(update_query(&self.auth_token, &self.id, q)?.url("update-project"))
     }
 }
 
 #[derive(Debug, Default, Deserialize, JsonSchema)]
 pub struct ShowInput {
+    /// Item ID, or a built-in list: inbox, today, anytime, upcoming, someday, logbook, tomorrow, deadlines, repeating, all-projects, logged-projects
     pub id: Option<String>,
+    /// Area, project, tag, or built-in list name
     pub query: Option<String>,
+    /// Only show items with these tags
     pub filter: Option<Vec<String>>,
 }
 
@@ -310,7 +343,9 @@ impl SearchInput {
 #[derive(Debug, Default, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase")]
 pub struct JsonInput {
+    /// Defaults to the THINGS_AUTH_TOKEN env var
     pub auth_token: Option<String>,
+    /// Array of Things JSON objects, e.g. [{"type":"to-do","attributes":{"title":"Milk"}}]. Updates use "operation":"update" and "id"
     pub data: Value,
     pub reveal: Option<bool>,
 }
@@ -328,6 +363,81 @@ impl JsonInput {
     }
 }
 
+#[derive(Debug, Clone, Copy, Deserialize, Serialize, JsonSchema)]
+#[serde(rename_all = "lowercase")]
+pub enum List {
+    Inbox,
+    Today,
+    Tomorrow,
+    Anytime,
+    Upcoming,
+    Someday,
+    Logbook,
+    Trash,
+}
+
+#[derive(Debug, Default, Deserialize, JsonSchema)]
+pub struct TodosInput {
+    pub list: Option<List>,
+    /// Project name or ID
+    pub project: Option<String>,
+    /// Area name or ID
+    pub area: Option<String>,
+    /// Tag name or ID
+    pub tag: Option<String>,
+    /// Max items to return. Defaults to 50
+    pub limit: Option<u32>,
+}
+
+impl TodosInput {
+    pub fn request(&self) -> Result<Value> {
+        let sources = [
+            self.list.is_some(),
+            self.project.is_some(),
+            self.area.is_some(),
+            self.tag.is_some(),
+        ];
+        if sources.iter().filter(|s| **s).count() != 1 {
+            return Err("provide exactly one of list, project, area, or tag".into());
+        }
+        Ok(json!({
+            "op": "todos",
+            "list": self.list,
+            "project": self.project,
+            "area": self.area,
+            "tag": self.tag,
+            "limit": self.limit.unwrap_or(50),
+        }))
+    }
+}
+
+#[derive(Debug, Default, Deserialize, JsonSchema)]
+pub struct GetInput {
+    /// To-do or project ID
+    pub id: String,
+}
+
+impl GetInput {
+    pub fn request(&self) -> Result<Value> {
+        if self.id.is_empty() {
+            return Err("id is required".into());
+        }
+        Ok(json!({ "op": "get", "id": self.id }))
+    }
+}
+
+#[derive(Debug, Default, Deserialize, JsonSchema)]
+pub struct ProjectsInput {
+    /// Only projects in this area (name or ID)
+    pub area: Option<String>,
+}
+
+impl ProjectsInput {
+    pub fn request(&self) -> Value {
+        json!({ "op": "projects", "area": self.area })
+    }
+}
+
 pub fn version_url() -> String {
     Query::default().url("version")
 }
@@ -335,7 +445,6 @@ pub fn version_url() -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use serde_json::json;
 
     fn s(v: &str) -> Option<String> {
         Some(v.into())
@@ -375,14 +484,14 @@ mod tests {
         .url();
         assert!(err.unwrap_err().contains("authToken"));
         let err = UpdateInput {
-            auth_token: "t".into(),
+            auth_token: s("t"),
             title: s("t"),
             ..Default::default()
         }
         .url();
         assert!(err.unwrap_err().contains("id"));
         let err = UpdateInput {
-            auth_token: "t".into(),
+            auth_token: s("t"),
             id: "x".into(),
             ..Default::default()
         }
@@ -393,7 +502,7 @@ mod tests {
     #[test]
     fn update_allows_clearing_deadline() {
         let input = UpdateProjectInput {
-            auth_token: "tok".into(),
+            auth_token: s("tok"),
             id: "p1".into(),
             deadline: s(""),
             ..Default::default()
@@ -432,6 +541,25 @@ mod tests {
             .url()
             .is_err()
         );
+    }
+
+    #[test]
+    fn todos_requires_one_source() {
+        assert!(TodosInput::default().request().is_err());
+        let both = TodosInput {
+            list: Some(List::Today),
+            tag: s("x"),
+            ..Default::default()
+        };
+        assert!(both.request().is_err());
+        let req = TodosInput {
+            list: Some(List::Logbook),
+            ..Default::default()
+        }
+        .request()
+        .unwrap();
+        assert_eq!(req["list"], "logbook");
+        assert_eq!(req["limit"], 50);
     }
 
     #[test]

@@ -1,6 +1,6 @@
 # Things MCP
 
-An MCP server for [Things](https://culturedcode.com/things/) on macOS. It wraps the [Things URL scheme](https://culturedcode.com/things/support/articles/2803573/) so your coding agent can create, update, and open to-dos and projects.
+An MCP server for [Things](https://culturedcode.com/things/) on macOS. Agents read your tasks through AppleScript and write through the [Things URL scheme](https://culturedcode.com/things/support/articles/2803573/).
 
 Any client connected to this server can change your tasks. Only give it to agents you trust.
 
@@ -20,30 +20,34 @@ This puts `things-mcp` in `~/.cargo/bin`. GUI apps may not see that path, so use
 
 Things stays in the background by default. Add `-activate` to the server's args to bring it to the front on every call.
 
+To let agents update items without asking you for a token, set `THINGS_AUTH_TOKEN`. Find it in **Things → Settings → General → Enable Things URLs → Manage**.
+
+The first read asks macOS to let your agent's app control Things. Allow it.
+
 ## Add to your agent
 
 **Claude Code**
 
 ```bash
-claude mcp add -s user things -- things-mcp
+claude mcp add -s user -e THINGS_AUTH_TOKEN=your-token things -- things-mcp
 ```
 
 **Codex**
 
 ```bash
-codex mcp add things -- things-mcp
+codex mcp add things --env THINGS_AUTH_TOKEN=your-token -- things-mcp
 ```
 
 **Gemini CLI**
 
 ```bash
-gemini mcp add -s user things things-mcp
+gemini mcp add -s user -e THINGS_AUTH_TOKEN=your-token things things-mcp
 ```
 
 **VS Code**
 
 ```bash
-code --add-mcp '{"name":"things","command":"things-mcp"}'
+code --add-mcp '{"name":"things","command":"things-mcp","env":{"THINGS_AUTH_TOKEN":"your-token"}}'
 ```
 
 **Cursor, Claude Desktop, and other JSON configs**
@@ -55,7 +59,8 @@ Add to `~/.cursor/mcp.json`, `~/Library/Application Support/Claude/claude_deskto
   "mcpServers": {
     "things": {
       "command": "/Users/you/.cargo/bin/things-mcp",
-      "args": []
+      "args": [],
+      "env": { "THINGS_AUTH_TOKEN": "your-token" }
     }
   }
 }
@@ -65,20 +70,21 @@ Add to `~/.cursor/mcp.json`, `~/Library/Application Support/Claude/claude_deskto
 
 | Tool | Does |
 | --- | --- |
+| `things-todos` | List to-dos in a built-in list, project, area, or tag |
+| `things-get` | Get a to-do or project by ID |
+| `things-projects` | List projects |
+| `things-areas` | List areas |
+| `things-tags` | List tags |
 | `things-add` | Create to-dos |
 | `things-add-project` | Create a project, optionally with to-dos |
 | `things-update` | Update a to-do |
 | `things-update-project` | Update a project |
-| `things-show` | Open a list, project, area, tag, or to-do |
-| `things-search` | Open search |
-| `things-version` | Show the Things and URL scheme versions |
 | `things-json` | Bulk create or update with the JSON command |
+| `things-show` | Open an item or list in the Things window |
+| `things-search` | Open Things search |
+| `things-version` | Show the Things and URL scheme versions |
 
-Updates need your auth token from **Things → Settings → General → Enable Things URLs → Manage**. To get an item's ID, right-click it and choose **Share → Copy Link**.
-
-## Limitations
-
-The URL scheme is write-only. The server can't read or list your tasks.
+Read tools return JSON with IDs that the update tools accept. Tools are annotated read-only or destructive so agents can auto-approve reads.
 
 ## Development
 

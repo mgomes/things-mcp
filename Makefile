@@ -1,10 +1,10 @@
 .PHONY: test build run
 
 test:
-	go test ./...
+	cargo test
 
 build:
-	go build -o bin/things-mcp ./cmd/things-mcp
+	cargo build --release
 
 run:
-	go run ./cmd/things-mcp $(ARGS)
+	cargo run -- $(ARGS)

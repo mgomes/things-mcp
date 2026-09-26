@@ -15,7 +15,7 @@
 ## Requirements
 
 - macOS with [Things](https://culturedcode.com/things/mac/) installed and “Things URLs” enabled in Things → Settings → General.
-- Go `1.25.2` (the repo uses the Go toolchain manager).
+- Rust 1.85+ (edition 2024).
 
 ## Getting Started
 
@@ -23,7 +23,7 @@ Clone the repo, then build and test:
 
 ```bash
 make test
-make build   # outputs bin/things-mcp
+make build   # outputs target/release/things-mcp
 ```
 
 Start the server. By default Things stays in the background; pass `ARGS="-activate"` to tell the binary to bring Things to the front after each command:
@@ -39,7 +39,7 @@ Add the following MCP server config to your client (adjust the binary path if ne
 {
   "mcpServers": {
     "things-mcp": {
-      "command": "/your/local/path/things-mcp/bin/things-mcp",
+      "command": "/your/local/path/things-mcp/target/release/things-mcp",
       "args": []
     }
   }
@@ -52,7 +52,7 @@ Pass `"-activate"` or other flags in the `args` array when you want to foregroun
 {
   "mcpServers": {
     "things-mcp": {
-      "command": "/your/local/path/things-mcp/bin/things-mcp",
+      "command": "/your/local/path/things-mcp/target/release/things-mcp",
       "args": ["-activate"]
     }
   }
@@ -66,13 +66,13 @@ Pass `"-activate"` or other flags in the `args` array when you want to foregroun
   Run:
 
 ```bash
-codex mcp add things-mcp -- /your/local/path/things-mcp/bin/things-mcp
+codex mcp add things-mcp -- /your/local/path/things-mcp/target/release/things-mcp
 ```
 
 Add `-activate` after the binary path if you want Things to pop to the foreground:
 
 ```bash
-codex mcp add things-mcp -- /your/local/path/things-mcp/bin/things-mcp -activate
+codex mcp add things-mcp -- /your/local/path/things-mcp/target/release/things-mcp -activate
 ```
 
 </details>
@@ -87,7 +87,7 @@ codex mcp add things-mcp -- /your/local/path/things-mcp/bin/things-mcp -activate
   Run:
 
 ```bash
-claude mcp add things-mcp /your/local/path/things-mcp/bin/things-mcp
+claude mcp add things-mcp /your/local/path/things-mcp/target/release/things-mcp
 ```
 
 Add `-activate` after the binary path if you want Things to pop to the foreground.
@@ -103,7 +103,7 @@ Add `-activate` after the binary path if you want Things to pop to the foregroun
   <summary>Gemini CLI</summary>
 
 ```bash
-gemini mcp add things-mcp /your/local/path/things-mcp/bin/things-mcp
+gemini mcp add things-mcp /your/local/path/things-mcp/target/release/things-mcp
 ```
 
 Supply `--args -activate` if you want foreground launches.
@@ -125,7 +125,7 @@ Supply `--args -activate` if you want foreground launches.
   Run:
 
 ```bash
-code --add-mcp '{"name":"things-mcp","command":"/your/local/path/things-mcp/bin/things-mcp","args":[]}'
+code --add-mcp '{"name":"things-mcp","command":"/your/local/path/things-mcp/target/release/things-mcp","args":[]}'
 ```
 
 Reopen VS Code so Copilot Chat loads the server.
@@ -148,7 +148,7 @@ Reopen VS Code so Copilot Chat loads the server.
 - `things-version` – show the Things build/scheme version dialog
 - `things-json` – invoke the JSON batch command for complex imports
 
-Each tool returns structured output with the dispatched URL so clients can display or reuse it.
+Each tool returns the dispatched URL so clients can display or reuse it.
 
 ## Testing
 

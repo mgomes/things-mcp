@@ -83,7 +83,7 @@ The URL scheme is write-only. The server can't read or list your tasks.
 ## Development
 
 ```bash
-make test
-make build
-make run ARGS="-activate"
+just test
+just build
+just run -activate
 ```
